@@ -1,22 +1,29 @@
-# Declaration of variables
 CC = g++
-CC_FLAGS = -w
 
-# File names
+SRCDIR = src
+OBJDIR = o
+DEPDIR = d
+
+SRCFILES = $(shell find $(SRCDIR) -name "*.cpp")
+OBJFILES = $(SRCFILES:$(SRCDIR)%.cpp=$(OBJDIR)%.o)
+
 EXEC = run
-SRC = ./src/
-OBJ = ./o/
-SOURCES = $(wildcard $(SRC)*.cpp)
-OBJECTS = $(SOURCES:$(SRC)%.cpp=$(OBJ)%.o)
 
-# Main target
-$(EXEC): $(OBJECTS)
-		$(CC) $(OBJECTS) -o $(EXEC)
+$(shell mkdir -p `dirname $(OBJFILES)` >> /dev/null)
 
-# To obtain object files
-$(OBJ)%.o: $(SRC)%.cpp
-		$(CC) -c $(CC_FLAGS) $< -o $@
+# Linker
+$(EXEC): $(OBJFILES)
+	$(CC) $? -o $@
 
-# To remove generated files
-clean:
-		rm -f $(EXEC) $(OBJECTS)
+# Advanced dependencies building
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	$(CC) -MD -c -o $@ $<
+	@cp $(OBJDIR)/$*.d $(OBJDIR)/$*.P; \
+		sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+		-e '/^$$/ d' -e 's/$$/ :/' < $(OBJDIR)/$*.d >> $(OBJDIR)/$*.P; \
+		rm -f $(OBJDIR)/$*.d
+
+-include $(shell find $(OBJDIR) -name "*.P")
+
+print-%:
+	@echo '$*=$($*)'
