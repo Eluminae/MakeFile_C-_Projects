@@ -2,18 +2,18 @@ CC = g++
 
 SRCDIR = src
 OBJDIR = o
-DEPDIR = d
 
 SRCFILES = $(shell find $(SRCDIR) -name "*.cpp")
 OBJFILES = $(SRCFILES:$(SRCDIR)%.cpp=$(OBJDIR)%.o)
 
 EXEC = run
+BINDIR = bin
 
-$(shell mkdir -p `dirname $(OBJFILES)` >> /dev/null)
+$(shell mkdir -p $(BINDIR) `dirname $(OBJFILES)` >> /dev/null)
 
 # Linker
 $(EXEC): $(OBJFILES)
-	$(CC) $? -o $@
+	$(CC) $? -o $(BINDIR)/$@
 
 # Advanced dependencies building
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
